@@ -7,8 +7,12 @@ import type { MiddlewareHandler, RouterRoute } from 'hono/types';
 import type { AnyZodObject } from 'zod';
 import type { Method } from './rest';
 
+export type HonoRouter = Router<[never, RouterRoute]>;
+
 export interface CreateBlazeOption {
-  router?: Router<[never, RouterRoute]>;
+  router?: HonoRouter;
+  path?: string | null;
+  autoStart?: boolean | null;
 }
 
 export interface OpenAPIRequest {

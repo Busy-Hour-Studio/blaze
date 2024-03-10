@@ -1,17 +1,12 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { Blaze, initializeServices } from '../src';
+import { Blaze } from '../src';
+import { SERVICE_PATH } from './utils/constants';
 
-const app = new Blaze({});
+const app = new Blaze();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const servicePath = path.resolve(__dirname, 'services');
-
-initializeServices({
-  app,
-  path: servicePath,
+app.load({
+  path: SERVICE_PATH,
+  // Start the services when all the services are loaded
+  autoStart: true,
 });
 
 app.doc('/doc', {

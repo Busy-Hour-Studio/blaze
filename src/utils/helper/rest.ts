@@ -1,6 +1,6 @@
 import type { StatusCode } from 'hono/utils/http-status';
 import { BlazeError } from '../../errors/BlazeError';
-import type { Blaze } from '../../router/Blaze';
+import type { BlazeRouter } from '../../router/BlazeRouter';
 import type {
   Method,
   RestErrorHandlerOption,
@@ -26,7 +26,7 @@ export function extractRestParams(params: RestParam) {
   return [params.method ?? null, params.path] as const;
 }
 
-export function getRouteHandler(router: Blaze, method: Method | null) {
+export function getRouteHandler(router: BlazeRouter, method: Method | null) {
   if (!method) return router.all;
 
   return router[method.toLowerCase() as Lowercase<Method>];

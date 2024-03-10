@@ -1,9 +1,8 @@
-import type { Router } from 'hono/router';
-import type { RouterRoute } from 'hono/types';
 import type { BlazeContext } from '../event/BlazeContext';
-import type { Blaze } from '../router';
+import type { BlazeRouter } from '../router/BlazeRouter';
 import type { Action, ActionHandler, Actions } from './action';
 import type { Event, EventActionHandler, Events } from './event';
+import type { HonoRouter } from './router';
 
 export interface Service {
   name?: string | null;
@@ -13,11 +12,11 @@ export interface Service {
   onCreated?: ActionHandler | null;
   onStarted?: ActionHandler | null;
   onStopped?(handlers: EventActionHandler[]): void;
-  router?: Router<[never, RouterRoute]>;
+  router?: HonoRouter;
 }
 
 export interface LoadServiceOption {
-  app: Blaze;
+  app: BlazeRouter;
   path: string;
 }
 
@@ -25,7 +24,7 @@ export interface CreateServiceOption {
   sourcePath: string;
   servicePath: string;
   blazeCtx: BlazeContext;
-  app: Blaze;
+  app: BlazeRouter;
 }
 
 export interface ServiceConstructorOption
@@ -43,4 +42,9 @@ export interface CreateEventOption {
   event: Event;
   serviceName: string;
   eventAlias: string;
+}
+
+export interface LoadServicesOption {
+  path: string;
+  autoStart?: boolean | null;
 }

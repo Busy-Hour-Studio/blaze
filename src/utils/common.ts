@@ -16,13 +16,18 @@ export function mapToObject(
   map: Map<Random, unknown>,
   valueMapper?: (value: unknown) => unknown
 ) {
-  return Array.from(map.entries()).reduce(
-    (acc, [key, value]) => ({
-      ...acc,
-      [key]: valueMapper ? valueMapper(value) : value,
-    }),
-    {}
-  );
+  const result = Object.create(null);
+
+  for (const [key, value] of map.entries()) {
+    Object.defineProperty(result, key, {
+      value: valueMapper ? valueMapper(value) : value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+  }
+
+  return result;
 }
 
 export function removeTrailingSlash(path: string) {

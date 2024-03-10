@@ -4,12 +4,8 @@ import { BlazeContext } from '../event/BlazeContext';
 import type { LoadServiceOption } from '../types/service';
 import { BlazeService } from './setup/service';
 
-export async function initializeServices(options: LoadServiceOption) {
+export async function loadServices(options: LoadServiceOption) {
   const { app, path: sourcePath } = options;
-
-  if (!fs.existsSync(sourcePath)) {
-    throw new BlazeError("Service path doesn't exist");
-  }
 
   const blazeCtx = new BlazeContext({
     body: null,
@@ -32,6 +28,21 @@ export async function initializeServices(options: LoadServiceOption) {
       return service;
     })
   );
+
+  return pendingServices;
+}
+
+/**
+ * @deprecated use `app.load` instead from the `Blaze` instance
+ * will be removed in v3.0.0
+ * @param options LoadServiceOption
+ */
+export async function initializeServices(options: LoadServiceOption) {
+  if (!fs.existsSync(options.path)) {
+    throw new BlazeError("Service path doesn't exist");
+  }
+
+  const pendingServices = await loadServices(options);
 
   pendingServices.forEach((service) => service.onStarted());
 }

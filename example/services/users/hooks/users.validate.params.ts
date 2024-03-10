@@ -5,7 +5,7 @@ import { UserHeaderSchema } from '../utils/schemas';
 export const validateUserParam = BlazeCreator.action.hook.before(
   async (ctx) => {
     // Check if the header is ok or not
-    if (!ctx.validations?.header) {
+    if (!ctx.validations?.get('header')) {
       throw new BlazeError({
         errors: null,
         message: 'Unauthorized',
@@ -31,7 +31,7 @@ export const validateUserParam = BlazeCreator.action.hook.before(
       });
     }
 
-    if (!ctx.validations?.params) {
+    if (!ctx.validations?.get('params')) {
       throw new BlazeError({
         errors: null,
         message: 'Bad Request',
