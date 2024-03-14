@@ -151,3 +151,5 @@ export class BlazeEventEmitter {
   public removeListener = this.off;
   public removeAllListeners = this.offAll;
 }
+
+export const BlazeEvent = new BlazeEventEmitter({});

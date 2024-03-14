@@ -4,7 +4,7 @@ import type {
   ContextValidation,
   RecordString,
   RecordUnknown,
-  ValidationResult,
+  ValidationResultMap,
 } from './helper';
 
 export interface CreateContextOption<
@@ -36,5 +36,5 @@ export interface ContextConstructorOption<
     CreateContextOption<Body, Params, Headers>,
     'validator' | 'throwOnValidationError'
   > {
-  validations: ValidationResult | null;
+  validations: ValidationResultMap | null;
 }

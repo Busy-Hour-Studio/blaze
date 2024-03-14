@@ -24,6 +24,11 @@ export interface ValidationResult {
   header: boolean;
 }
 
+export type ValidationResultMap = Map<
+  keyof ValidationResult,
+  ValidationResult[keyof ValidationResult]
+>;
+
 export interface ContextData<
   Body extends RecordUnknown = RecordUnknown,
   Params extends RecordUnknown = RecordUnknown,
@@ -34,14 +39,21 @@ export interface ContextData<
   headers: Headers | null;
 }
 
+export type ContextDataMap<
+  Body extends RecordUnknown = RecordUnknown,
+  Params extends RecordUnknown = RecordUnknown,
+  Headers extends RecordString = RecordString,
+  Context = ContextData<Body, Params, Headers>,
+> = Map<keyof Context, Context[keyof Context]>;
+
 export interface DataValidatorOption<
   Body extends RecordUnknown = RecordUnknown,
   Params extends RecordUnknown = RecordUnknown,
   Headers extends RecordString = RecordString,
 > {
-  data: ContextData<Body, Params, Headers>;
+  data: ContextDataMap<Body, Params, Headers>;
   schema: ZodObject<ZodRawShape>;
   honoCtx: HonoContext | null;
   throwOnValidationError: boolean;
-  validations: ValidationResult;
+  validations: ValidationResultMap;
 }

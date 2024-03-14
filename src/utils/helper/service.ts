@@ -1,12 +1,12 @@
 import { Service } from '../../types/service';
-import { hasOwnProperty } from '../common';
+import { hasOwnProperty, require } from '../common';
 
-export async function loadService(filePath: string) {
+export function loadService(filePath: string) {
   const file:
     | Service
     | {
         default: Service;
-      } = await import(filePath);
+      } = require(filePath);
 
   let service: Service;
 

@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { BlazeContext } from '../event/BlazeContext';
 import type { ActionCallResult } from '../types/action';
 import type { CreateContextOption } from '../types/context';
@@ -16,13 +17,13 @@ export function mapToObject(
   map: Map<Random, unknown>,
   valueMapper?: (value: unknown) => unknown
 ) {
-  return Array.from(map.entries()).reduce(
-    (acc, [key, value]) => ({
-      ...acc,
-      [key]: valueMapper ? valueMapper(value) : value,
-    }),
-    {}
-  );
+  const result = Object.create(null);
+
+  for (const [key, value] of map.entries()) {
+    result[key] = valueMapper ? valueMapper(value) : value;
+  }
+
+  return result;
 }
 
 export function removeTrailingSlash(path: string) {
@@ -83,3 +84,5 @@ export async function createContext(
     ok: true,
   };
 }
+
+export const require = createRequire(import.meta.url);

@@ -2,9 +2,9 @@ import { BlazeError } from '../errors/BlazeError';
 import type { ActionCallResult as Result } from '../types/action';
 import type { EventName } from '../types/event';
 import { RESERVED_KEYWORD } from '../utils/constant';
-import { BlazeEvent } from './BlazeEvent';
+import { BlazeEvent } from './BlazeEventEmitter';
 
-export class BlazeBroker {
+export class BlazeBrokerRegistry {
   public hasListener(eventName: EventName) {
     return BlazeEvent.listenerCount(eventName) > 0;
   }
@@ -48,3 +48,5 @@ export class BlazeBroker {
     return this.emit(evtName, ...values);
   }
 }
+
+export const BlazeBroker = new BlazeBrokerRegistry();

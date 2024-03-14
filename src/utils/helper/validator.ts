@@ -17,15 +17,15 @@ export function validateHeader(options: DataValidatorOption) {
   const { data, honoCtx, schema, validations, throwOnValidationError } =
     options;
 
-  if (!data.headers && honoCtx) {
-    data.headers = honoCtx.req.header();
+  if (!data.get('headers') && honoCtx) {
+    data.set('headers', honoCtx.req.header());
   }
 
-  const result = validateInput(data.headers, schema);
+  const result = validateInput(data.get('headers'), schema);
 
-  validations.header = result.success;
+  validations.set('header', result.success);
 
-  if (result.success) data.headers = result.data;
+  if (result.success) data.set('headers', result.data);
   else if (!result.success && throwOnValidationError)
     throw new BlazeError({
       errors: result.error,
@@ -39,15 +39,15 @@ export function validateParams(options: DataValidatorOption) {
   const { data, honoCtx, schema, validations, throwOnValidationError } =
     options;
 
-  if (!data.params && honoCtx) {
-    data.params = honoCtx.req.param();
+  if (!data.get('params') && honoCtx) {
+    data.set('params', honoCtx.req.header());
   }
 
-  const result = validateInput(data.params, schema);
+  const result = validateInput(data.get('params'), schema);
 
-  validations.params = result.success;
+  validations.set('params', result.success);
 
-  if (result.success) data.params = result.data;
+  if (result.success) data.set('params', result.data);
   else if (!result.success && throwOnValidationError)
     throw new BlazeError({
       errors: result.error,
@@ -61,7 +61,7 @@ export async function validateBody(options: DataValidatorOption) {
   const { data, honoCtx, schema, validations, throwOnValidationError } =
     options;
 
-  if (!data.body && honoCtx) {
+  if (!data.get('body') && honoCtx) {
     const method = honoCtx.req.method.toUpperCase() as Method;
 
     switch (method) {
@@ -71,16 +71,16 @@ export async function validateBody(options: DataValidatorOption) {
         return;
 
       default:
-        data.body = await getReqBody(honoCtx);
+        data.set('body', await getReqBody(honoCtx));
         break;
     }
   }
 
-  const result = validateInput(data.body, schema);
+  const result = validateInput(data.get('body'), schema);
 
-  validations.body = result.success;
+  validations.set('body', result.success);
 
-  if (result.success) data.body = result.data;
+  if (result.success) data.set('body', result.data);
   else if (!result.success && throwOnValidationError)
     throw new BlazeError({
       errors: result.error,

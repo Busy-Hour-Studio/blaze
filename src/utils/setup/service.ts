@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { BlazeContext } from '../../event/BlazeContext';
-import { BlazeEvent } from '../../event/BlazeEvent';
+import { BlazeEvent } from '../../event/BlazeEventEmitter';
 import { Blaze } from '../../router';
 import type { Action } from '../../types/action';
 import type { EventActionHandler } from '../../types/event';
@@ -67,51 +67,53 @@ export class BlazeService {
   }
 
   private loadServiceActions() {
-    if (!this.service.actions) return [];
+    if (!this.service.actions) return this.actions;
 
-    const actions = Object.entries(this.service.actions).map(
-      ([actionAlias, action]) => {
-        if (action.rest) this.loadRest(action);
+    // eslint-disable-next-line guard-for-in
+    for (const alias in this.service.actions) {
+      const action = this.service.actions[alias];
 
-        const actionInstace = new BlazeServiceAction({
-          action,
-          actionAlias,
-          serviceName: this.serviceName,
-        });
+      if (action.rest) this.loadRest(action);
 
-        this.handlers.push({
-          name: actionInstace.actionName,
-          handler: actionInstace.actionHandler,
-        });
+      const actionInstance = new BlazeServiceAction({
+        action,
+        actionAlias: alias,
+        serviceName: this.serviceName,
+      });
 
-        return actionInstace;
-      }
-    );
+      this.handlers.push({
+        name: actionInstance.actionName,
+        handler: actionInstance.actionHandler,
+      });
 
-    return this.actions.concat(actions);
+      this.actions.push(actionInstance);
+    }
+
+    return this.actions;
   }
 
   private loadServiceEvents() {
-    if (!this.service.events) return;
+    if (!this.service.events) return this.events;
 
-    const events = Object.entries(this.service.events).map(
-      ([eventAlias, event]) => {
-        const eventInstance = new BlazeServiceEvent({
-          event,
-          eventAlias,
-          serviceName: this.serviceName,
-        });
+    // eslint-disable-next-line guard-for-in
+    for (const alias in this.service.events) {
+      const event = this.service.events[alias];
 
-        this.handlers.push({
-          name: eventInstance.eventName,
-          handler: eventInstance.eventHandler,
-        });
+      const eventInstance = new BlazeServiceEvent({
+        event,
+        eventAlias: alias,
+        serviceName: this.serviceName,
+      });
 
-        return eventInstance;
-      }
-    );
+      this.handlers.push({
+        name: eventInstance.eventName,
+        handler: eventInstance.eventHandler,
+      });
 
-    return this.events.concat(events);
+      this.events.push(eventInstance);
+    }
+
+    return this.events;
   }
 
   private assignRestRoute() {
@@ -160,9 +162,9 @@ export class BlazeService {
     this.service.onStarted?.(this.blazeCtx);
   }
 
-  public static async create(options: CreateServiceOption) {
+  public static create(options: CreateServiceOption) {
     const servicePath = path.resolve(options.sourcePath, options.servicePath);
-    const serviceFile = await loadService(servicePath);
+    const serviceFile = loadService(servicePath);
 
     const service = new BlazeService({
       app: options.app,

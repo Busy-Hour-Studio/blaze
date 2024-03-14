@@ -4,7 +4,7 @@ import { BlazeContext } from '../event/BlazeContext';
 import type { LoadServiceOption } from '../types/service';
 import { BlazeService } from './setup/service';
 
-export async function initializeServices(options: LoadServiceOption) {
+export function initializeServices(options: LoadServiceOption) {
   const { app, path: sourcePath } = options;
 
   if (!fs.existsSync(sourcePath)) {
@@ -20,18 +20,16 @@ export async function initializeServices(options: LoadServiceOption) {
   });
 
   const serviceFiles = fs.readdirSync(sourcePath);
-  const pendingServices = await Promise.all(
-    serviceFiles.map(async (servicePath) => {
-      const service = await BlazeService.create({
-        app,
-        servicePath,
-        blazeCtx,
-        sourcePath,
-      });
+  const pendingServices = serviceFiles.map((servicePath) => {
+    const service = BlazeService.create({
+      app,
+      servicePath,
+      blazeCtx,
+      sourcePath,
+    });
 
-      return service;
-    })
-  );
+    return service;
+  });
 
   pendingServices.forEach((service) => service.onStarted());
 }

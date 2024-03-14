@@ -7,11 +7,11 @@ import type {
   CreateContextOption,
 } from '../types/context';
 import type {
-  ContextData,
+  ContextDataMap,
   ContextValidation,
   RecordString,
   RecordUnknown,
-  ValidationResult,
+  ValidationResultMap,
 } from '../types/helper';
 import type { ResponseType } from '../types/rest';
 import { getReqBody } from '../utils/helper/context';
@@ -39,15 +39,15 @@ export class BlazeContext<
   public status: StatusCode | null;
   public readonly meta: Map<keyof Meta, Meta[keyof Meta]>;
   public readonly headers: Map<string, string | string[]>;
-  public readonly validations: ValidationResult | null;
+  public readonly validations: ValidationResultMap | null;
   public readonly isRest: boolean;
-  public readonly broker: BlazeBroker;
 
   // Aliases for broker
-  public readonly call: BlazeBroker['call'];
-  public readonly mcall: BlazeBroker['mcall'];
-  public readonly emit: BlazeBroker['emit'];
-  public readonly event: BlazeBroker['event'];
+  public readonly broker = BlazeBroker;
+  public readonly call = BlazeBroker.call.bind(BlazeBroker);
+  public readonly mcall = BlazeBroker.mcall.bind(BlazeBroker);
+  public readonly emit = BlazeBroker.emit.bind(BlazeBroker);
+  public readonly event = BlazeBroker.event.bind(BlazeBroker);
 
   constructor(options: ContextConstructorOption<Body, Params, Headers>) {
     const { honoCtx, body, params, headers, validations } = options;
@@ -65,42 +65,53 @@ export class BlazeContext<
     this.headers = new Map<string, string | string[]>();
     this.isRest = !!options.honoCtx;
     this.validations = validations;
-    this.broker = new BlazeBroker();
-
-    // Aliases for broker
-    this.call = this.broker.call.bind(this.broker);
-    this.mcall = this.broker.mcall.bind(this.broker);
-    this.emit = this.broker.emit.bind(this.broker);
-    this.event = this.broker.event.bind(this.broker);
   }
 
   public get query() {
-    if (this.$query) return this.$query;
-    if (!this.$honoCtx) return {};
+    if (!this.$honoCtx) {
+      this.$query = {} as qs.ParsedUrlQuery;
+    } else {
+      const url = new URL(this.$honoCtx.req.url).searchParams;
 
-    const url = new URL(this.$honoCtx.req.url).searchParams;
-
-    this.$query = qs.parse(url.toString());
+      this.$query = qs.parse(url.toString());
+      this.$query = qs.parse(url.toString());
+    }
 
     return this.$query;
   }
 
+  private get reqHeaders(): Headers {
+    if (this.$reqHeaders) return this.$reqHeaders;
+
+    if (!this.$honoCtx) {
+      this.$reqHeaders = {} as Headers;
+    } else {
+      this.$reqHeaders = this.$honoCtx.req.header() as Headers;
+    }
+
+    return this.$reqHeaders;
+  }
+
   private get reqParams(): Params {
     if (this.$reqParams) return this.$reqParams;
-    if (!this.$honoCtx) return {} as Params;
-
-    this.$reqParams = this.$honoCtx.req.param() as Params;
+    if (!this.$honoCtx) {
+      this.$reqParams = {} as Params;
+    } else {
+      this.$reqParams = this.$honoCtx.req.param() as Params;
+    }
 
     return this.$reqParams;
   }
 
-  private get reqHeaders(): Headers {
-    if (this.$reqHeaders) return this.$reqHeaders;
-    if (!this.$honoCtx) return {} as Headers;
+  private async getBody(): Promise<Body> {
+    if (this.$body) return this.$body;
+    if (!this.$honoCtx) {
+      this.$body = {} as Body;
+    } else {
+      this.$body = (await getReqBody(this.$honoCtx)) ?? ({} as Body);
+    }
 
-    this.$reqHeaders = this.$honoCtx.req.header() as Headers;
-
-    return this.$reqHeaders;
+    return this.$body as Body;
   }
 
   public async params() {
@@ -115,15 +126,6 @@ export class BlazeContext<
     };
 
     return this.$params;
-  }
-
-  private async getBody(): Promise<Body> {
-    if (this.$body) return this.$body;
-    if (!this.$honoCtx) return {} as Body;
-
-    this.$body = (await getReqBody(this.$honoCtx)) ?? ({} as Body);
-
-    return this.$body as Body;
   }
 
   public get request() {
@@ -160,17 +162,17 @@ export class BlazeContext<
     >
   ): Promise<BlazeContext<Meta, Body, Params, Headers>> {
     const { honoCtx, validator, throwOnValidationError } = options;
-    const data: ContextData<Body, Params, Headers> = {
-      body: null,
-      params: null,
-      headers: null,
-    };
 
-    const validations: ValidationResult = {
-      body: true,
-      params: true,
-      header: true,
-    };
+    const data: ContextDataMap<Body, Params, Headers> = new Map([
+      ['body', options.body],
+      ['params', options.params],
+      ['headers', options.headers],
+    ] as never);
+    const validations: ValidationResultMap = new Map([
+      ['body', true],
+      ['params', true],
+      ['header', true],
+    ]);
 
     if (validator?.header) {
       validateHeader({
@@ -203,9 +205,9 @@ export class BlazeContext<
     }
 
     const ctx = new BlazeContext<Meta, Body, Params, Headers>({
-      body: data.body,
-      params: data.params,
-      headers: data.headers,
+      body: data.get('body') as Body | null,
+      params: data.get('params') as Params | null,
+      headers: data.get('headers') as Headers | null,
       honoCtx,
       validations,
     });
