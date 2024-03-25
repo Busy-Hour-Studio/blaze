@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { BlazeContext, BlazeEvent } from '../../event';
-import { Blaze } from '../../router';
+import { BlazeRouter } from '../../router/BlazeRouter';
 import type { Action } from '../../types/action';
 import type { EventActionHandler } from '../../types/event';
 import type { Method } from '../../types/rest';
@@ -19,15 +19,16 @@ export class BlazeService {
   public readonly servicePath: string;
   public readonly serviceName: string;
   public readonly restPath: string;
-  public readonly mainRouter: Blaze;
+  public readonly mainRouter: BlazeRouter;
   public readonly actions: BlazeServiceAction[];
   public readonly events: BlazeServiceEvent[];
   public readonly rests: BlazeServiceRest[];
   public readonly handlers: EventActionHandler[];
-  public router: Blaze | null;
+  public router: BlazeRouter | null;
 
   private readonly blazeCtx: BlazeContext;
   private readonly service: Service;
+  private isStarted: boolean;
 
   constructor(options: ServiceConstructorOption) {
     const { service, blazeCtx, servicePath, app } = options;
@@ -38,6 +39,7 @@ export class BlazeService {
     this.serviceName = getServiceName(service);
     this.restPath = getRestPath(service);
     this.mainRouter = app;
+    this.isStarted = false;
 
     this.actions = [];
     this.events = [];
@@ -52,7 +54,7 @@ export class BlazeService {
 
   private loadRest(action: Action) {
     if (!this.router) {
-      this.router = new Blaze({
+      this.router = new BlazeRouter({
         router: this.service.router,
       });
     }
@@ -147,8 +149,11 @@ export class BlazeService {
   }
 
   public onStarted() {
+    if (this.isStarted) return;
+
     this.assignRestRoute();
     this.service.onStarted?.(this.blazeCtx);
+    this.isStarted = true;
   }
 
   public static create(options: CreateServiceOption) {

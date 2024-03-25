@@ -10,7 +10,6 @@ import { createActionOpenAPI } from './openapi';
 import { createService } from './service';
 
 const ActionCreator = createAction as BlazeActionCreator;
-
 ActionCreator.validator = createActionValidator;
 ActionCreator.openapi = createActionOpenAPI;
 ActionCreator.hook = {
@@ -22,7 +21,6 @@ const EventCreator = createEvent as BlazeEventCreator;
 EventCreator.validator = createEventValidator;
 
 const ServiceCreator = createService as BlazeServiceCreator;
-
 ServiceCreator.action = ActionCreator;
 ServiceCreator.event = EventCreator;
 
