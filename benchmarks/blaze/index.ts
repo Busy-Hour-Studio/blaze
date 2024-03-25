@@ -1,7 +1,6 @@
-import { serve } from '@hono/node-server';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Blaze, initializeServices } from '../../src';
+import { Blaze } from '../../src';
 
 const app = new Blaze({});
 
@@ -10,16 +9,11 @@ const __dirname = path.dirname(__filename);
 
 const servicePath = path.resolve(__dirname, 'services');
 
-initializeServices({
-  app,
+app.load({
   path: servicePath,
+  autoStart: true,
 });
 
-const config = {
-  fetch: app.fetch as never,
-  port: 3000,
-};
-
-serve(config, () => {
+app.serve(3000, () => {
   console.log('Blaze server listening on port 3000');
 });
