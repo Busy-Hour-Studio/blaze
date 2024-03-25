@@ -32,12 +32,12 @@ export const onCreateUser = BlazeCreator.action({
   hooks: {
     // Auto log incoming request
     async before(ctx) {
-      Logger.info('User Payload', ctx.request.body);
-
       // Validate request
       //   Use type case since we already know that it's already being validated
       //     if not, it will throw an error, keep in mind we use `throwOnValidationError` option
       const user = (await ctx.request.body()) as UserSchema;
+
+      Logger.info('User Payload', user);
 
       // Throw error when user already exists
       if (USER_DB.has(user.email)) {
