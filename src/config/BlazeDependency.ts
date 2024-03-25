@@ -8,6 +8,7 @@ export class BlazeDependency {
 
   constructor() {
     const node = this.loadNodeAdapter();
+
     this.$nodeAdapter = node.adapter;
     this.nodeAdapterExist = node.isExist;
     this.$runTime = this.getRunTime();
@@ -28,7 +29,7 @@ export class BlazeDependency {
       return {
         isExist: true,
         adapter:
-          this.load<typeof import('@hono/node-server')>('hono/node-server'),
+          this.load<typeof import('@hono/node-server')>('@hono/node-server'),
       } as const;
     } catch {
       return {
